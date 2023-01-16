@@ -2,6 +2,12 @@
 
 int main(int argc, char *argv[])
 {
+    if (signal(SIGINT, exit_handler) == SIG_ERR)
+        printf("\ncan't catch SIGINT\n");
+
+    if (signal(SIGTSTP, disconnect_handler) == SIG_ERR)
+        printf("\ncan't catch SIGTSTP\n");
+
     int sockfd;
     if ((sockfd = establish_connection(argv)) == -1)
     {

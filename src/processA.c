@@ -2,6 +2,9 @@
 
 int main(int argc, char *argv[])
 {
+    if (signal(SIGINT, exit_handler) == SIG_ERR)
+        printf("\ncan't catch SIGINT\n");
+
     const int SIZE = W * H * sizeof(int);
     const char *shm_name = "/STATIC_SHARED_MEM";
     int i, shm_fd;
@@ -49,8 +52,12 @@ int main(int argc, char *argv[])
     print_circle(30, pixel, pos_x, pos_y, bmp);
 
     // Infinite loop
-    read_input(pos_x, pos_y, pixel, ptr, bmp);
- 
+    if ((read_input(pos_x, pos_y, pixel, ptr, bmp)) < 0)
+    {
+        perror("Error reading input");
+        return -1;
+    }
+
     sem_close(sem_id_reader);
     sem_close(sem_id_writer);
     sem_unlink(SEM_PATH_READER);

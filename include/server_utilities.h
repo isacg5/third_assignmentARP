@@ -15,6 +15,7 @@
 #include <fcntl.h>
 #include <semaphore.h>
 #include <arpa/inet.h>
+#include <signal.h>
 
 #define SEM_PATH_WRITER "/sem_writer"
 #define SEM_PATH_READER "/sem_reader"
@@ -23,6 +24,10 @@
 #define H 600
 #define D 4
 #define MAX 256
+
+#define LEN 10
+
+int disconnect = 0;
 
 int pos_x = 45;
 int pos_y = 15;
@@ -462,4 +467,50 @@ int connection(int connfd, int *ptr, bmpfile_t *bmp, rgb_pixel_t pixel)
         draw_circle();
     }
     return 0;
+}
+
+void exit_handler(int signo)
+{
+    if (signo == SIGINT)
+    {
+        char line[LEN];
+        FILE *cmd = popen("pidof -s processB", "r");
+        fgets(line, LEN, cmd);
+        pclose(cmd);
+        long pid = 0;
+        pid = strtoul(line, NULL, 10);
+        kill(pid, SIGUSR2);
+
+        FILE *cmd2 = popen("pidof -s master", "r");
+        fgets(line, LEN, cmd2);
+        pclose(cmd2);
+        long pid2 = 0;
+        pid2 = strtoul(line, NULL, 10);
+        kill(pid2, SIGUSR2);
+
+        exit(EXIT_SUCCESS);
+    }
+}
+
+void disconnect_handler(int signo)
+{
+    if (signo == SIGTSTP)
+    {
+        char line[LEN];
+        FILE *cmd = popen("pidof -s processB", "r");
+        fgets(line, LEN, cmd);
+        pclose(cmd);
+        long pid = 0;
+        pid = strtoul(line, NULL, 10);
+        kill(pid, SIGUSR1);
+
+        FILE *cmd2 = popen("pidof -s master", "r");
+        fgets(line, LEN, cmd2);
+        pclose(cmd2);
+        long pid2 = 0;
+        pid2 = strtoul(line, NULL, 10);
+        kill(pid2, SIGUSR1);
+
+        exit(EXIT_SUCCESS);
+    }
 }

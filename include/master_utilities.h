@@ -4,8 +4,13 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
+#include <signal.h>
 
 #define MAX 256
+
+int change_mode = 1;
+int disconnect = 1;
+int last_mode = 0;
 
 int spawn(const char *program, char *arg_list[])
 {
@@ -42,7 +47,7 @@ int normal_mode(char *arg_list_A[], char *arg_list_B[])
     return -1;
   }
 
-  usleep(100000);
+  usleep(1000000);
 
   if ((pid_proc_B = spawn("/usr/bin/konsole", arg_list_B)) == -1)
   {
@@ -113,4 +118,65 @@ int client_mode()
   waitpid(pid_proc_client, &status_client, 0);
   printf("Main program exiting with status %d\n", status_client);
   return status_client;
+}
+
+int ask_mode(int mode)
+{
+  while (mode < 1 || mode > 3)
+  {
+    printf("Select the mode: \n \t [1] Normal execution (assignment 2) \n \t [2] Server \n \t [3] Client\n");
+    scanf("%d", &mode);
+  }
+  return mode;
+}
+
+void exit_handler(int signo)
+{
+  if (signo == SIGUSR2)
+  {
+    change_mode = 1;
+  }
+}
+
+void disconnect_handler(int signo)
+{
+  if (signo == SIGUSR1)
+  {
+    disconnect = 1;
+  }
+}
+
+int execute(int mode)
+{
+  char *arg_list_A[] = {"/usr/bin/konsole", "-e", "./bin/processA", NULL};
+  char *arg_list_B[] = {"/usr/bin/konsole", "-e", "./bin/processB", NULL};
+
+  switch (mode)
+  {
+  case 1:
+    int status;
+    if ((status = normal_mode(arg_list_A, arg_list_B)) == -1)
+    {
+      return -1;
+    }
+    break;
+
+  case 2:
+    int status_server;
+    if ((status_server = server_mode(arg_list_B)) == -1)
+    {
+      return -1;
+    }
+    break;
+
+  case 3:
+    int status_client;
+    if ((status_client = client_mode()) == -1)
+    {
+      return -1;
+    }
+    break;
+  }
+
+  return 0;
 }

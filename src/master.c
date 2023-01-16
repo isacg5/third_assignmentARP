@@ -2,49 +2,32 @@
 
 int main(int argc, char *argv[])
 {
-  struct stat st = {0};
+  if (signal(SIGUSR1, disconnect_handler) == SIG_ERR)
+    printf("\ncan't catch SIGUSR1\n");
 
-  if (stat("./out", &st) == -1)
-  {
-    mkdir("./out", 0700);
-  }
+  if (signal(SIGUSR2, exit_handler) == SIG_ERR)
+    printf("\ncan't catch SIGUSR2\n");
 
   int mode = 0;
 
-  char *arg_list_A[] = {"/usr/bin/konsole", "-e", "./bin/processA", NULL};
-  char *arg_list_B[] = {"/usr/bin/konsole", "-e", "./bin/processB", NULL};
-
-  while (mode < 1 || mode > 3)
+  while (change_mode == 1 || disconnect == 1)
   {
-    printf("Select the mode: \n \t [1] Normal execution (assignment 2) \n \t [2] Server \n \t [3] Client\n");
-    scanf("%d", &mode);
-  }
-
-  switch (mode)
-  {
-  case 1:
-    int status;
-    if ((status = normal_mode(arg_list_A, arg_list_B)) == -1)
+    if (change_mode == 1)
+    {
+      change_mode = 0;
+      mode = 0;
+      mode = ask_mode(mode);
+      last_mode = mode;
+    }
+    else if (disconnect == 1)
+    {
+      disconnect = 0;
+      mode = last_mode;
+    }
+    if (execute(mode) == -1)
     {
       return -1;
     }
-    break;
-
-  case 2:
-    int status_server;
-    if ((status_server = server_mode(arg_list_B)) == -1)
-    {
-      return -1;
-    }
-    break;
-
-  case 3:
-    int status_client;
-    if ((status_client = client_mode()) == -1)
-    {
-      return -1;
-    }
-    break;
   }
 
   return 0;

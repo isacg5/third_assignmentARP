@@ -9,12 +9,16 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <semaphore.h>
+#include <signal.h>
+
 #define SEM_PATH_WRITER "/sem_writer"
 #define SEM_PATH_READER "/sem_reader"
 
 #define W 1600
 #define H 600
 #define D 4
+
+#define LEN 10
 
 int index_snapshot = 0;
 sem_t *sem_id_writer;
@@ -373,5 +377,29 @@ int read_input(int pos_x, int pos_y, rgb_pixel_t pixel, int *ptr, bmpfile_t *bmp
             move_circle(cmd);
             draw_circle();
         }
+    }
+    return 0;
+}
+
+void exit_handler(int signo)
+{
+    if (signo == SIGINT)
+    {
+        char line[LEN];
+        FILE *cmd = popen("pidof -s processB", "r");
+        fgets(line, LEN, cmd);
+        pclose(cmd);
+        long pid = 0;
+        pid = strtoul(line, NULL, 10);
+        kill(pid, SIGUSR2);
+
+        FILE *cmd2 = popen("pidof -s master", "r");
+        fgets(line, LEN, cmd2);
+        pclose(cmd2);
+        long pid2 = 0;
+        pid2 = strtoul(line, NULL, 10);
+        kill(pid2, SIGUSR2);
+
+        exit(EXIT_SUCCESS);
     }
 }

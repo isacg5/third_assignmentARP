@@ -2,6 +2,12 @@
 
 int main(int argc, char *argv[])
 {
+    if (signal(SIGINT, exit_handler) == SIG_ERR)
+        printf("\ncan't catch SIGINT\n");
+
+    if (signal(SIGTSTP, disconnect_handler) == SIG_ERR)
+        printf("\ncan't catch SIGTSTP\n");
+
     const int SIZE = W * H * sizeof(int);
     const char *shm_name = "/STATIC_SHARED_MEM";
     int i, shm_fd;
@@ -53,7 +59,8 @@ int main(int argc, char *argv[])
     write_on_shared_mem(ptr, 30, pos_y, pos_x);
     print_circle(30, pixel, pos_x, pos_y, bmp);
 
-    if((connection(connfd, ptr, bmp, pixel)) == -1){
+    if ((connection(connfd, ptr, bmp, pixel)) == -1)
+    {
         return -1;
     }
 

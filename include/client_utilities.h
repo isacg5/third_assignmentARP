@@ -8,9 +8,12 @@
 #include <unistd.h> // read(), write(), close()
 #include <ncurses.h>
 #include <time.h>
+#include <signal.h>
 
 #define MAX 256
-#define PORT 5000
+#define LEN 10
+
+int disconnect = 0;
 
 void init_console_ui()
 {
@@ -126,4 +129,36 @@ int establish_connection(char *argv[])
         printf("Connected to the server..\n");
 
     return sockfd;
+}
+
+void exit_handler(int signo)
+{
+    if (signo == SIGINT)
+    {
+        char line[LEN];
+        FILE *cmd2 = popen("pidof -s master", "r");
+        fgets(line, LEN, cmd2);
+        pclose(cmd2);
+        long pid2 = 0;
+        pid2 = strtoul(line, NULL, 10);
+        kill(pid2, SIGUSR2);
+
+        exit(EXIT_SUCCESS);
+    }
+}
+
+void disconnect_handler(int signo)
+{
+    if (signo == SIGTSTP)
+    {
+        char line[LEN];
+        FILE *cmd2 = popen("pidof -s master", "r");
+        fgets(line, LEN, cmd2);
+        pclose(cmd2);
+        long pid2 = 0;
+        pid2 = strtoul(line, NULL, 10);
+        kill(pid2, SIGUSR1);
+
+        exit(EXIT_SUCCESS);
+    }
 }

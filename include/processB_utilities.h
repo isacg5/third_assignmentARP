@@ -9,6 +9,7 @@
 #include <sys/shm.h>
 #include <sys/mman.h>
 #include <fcntl.h>
+#include <signal.h>
 
 #define SEM_PATH_WRITER "/sem_writer"
 #define SEM_PATH_READER "/sem_reader"
@@ -176,4 +177,20 @@ int open_semaphores()
         return -1;
     }
     return 0;
+}
+
+void exit_handler(int signo)
+{
+    if (signo == SIGUSR2)
+    {
+        exit(EXIT_SUCCESS);
+    }
+}
+
+void disconnect_handler(int signo)
+{
+    if (signo == SIGUSR1)
+    {
+        exit(EXIT_SUCCESS);
+    }
 }

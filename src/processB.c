@@ -2,6 +2,12 @@
 
 int main(int argc, char const *argv[])
 {
+    if (signal(SIGUSR1, disconnect_handler) == SIG_ERR)
+        printf("\ncan't catch SIGUSR1\n");
+
+    if (signal(SIGUSR2, exit_handler) == SIG_ERR)
+        printf("\ncan't catch SIGUSR2\n");
+
     int shared_map[W][H];
     const int SIZE = sizeof(shared_map);
     bmpfile_t *bmp;
