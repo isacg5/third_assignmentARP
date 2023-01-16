@@ -30,11 +30,14 @@ The assignment is divided into 5 processes: A, B, server, client and master.
 * Master process: This process is the main process. It creates the other processes. Notice that process A has always to be executed first, because is the process that initialize the semaphores, and at the time that process B opens the semaphores, those have to be already initialized. The master created an interface to the user where it asks for the mode of use. 
   
   1. The first option is the normal execution, as assignment two: For the normal execution, these processes are used
-    1. A process: This process reads from the input of the user. It admits the 4 movements with the arrows of the keyboard, up, down, right or left. If any of this keys are pressed and after the limits are considered, the green cross will move. This green cross represents a ball. When the position changes, the private dynamic memory and the static shared memory are updated. This window also provides a print button, that lets the user generate a .bmp file (in the folder out) with an image of the position of the circle.
-    1. B process: This process reads from the shared memory and keeps updating in the window the trace of the movement of the circle. This process is also writing in its dynamic private memory the information of the last circle position.
+    
+    * A process: This process reads from the input of the user. It admits the 4 movements with the arrows of the keyboard, up, down, right or left. If any of this keys are pressed and after the limits are considered, the green cross will move. This green cross represents a ball. When the position changes, the private dynamic memory and the static shared memory are updated. This window also provides a print button, that lets the user generate a .bmp file (in the folder out) with an image of the position of the circle.
+    
+    * B process: This process reads from the shared memory and keeps updating in the window the trace of the movement of the circle. This process is also writing in its dynamic private memory the information of the last circle position.
 
   2. The second option is the server mode, that will launch processes A and B and will open a connection for a client to connect.
-    1. By selectig this option, the user is asked to introduce the IP address and the port to connect with the other machine, and it launches the process A and B. Notice that the connection has to be established within 10 seconds, since at the time of launching the process B the client has to be already connected.
+    
+    * By selectig this option, the user is asked to introduce the IP address and the port to connect with the other machine, and it launches the process A and B. Notice that the connection has to be established within 10 seconds, since at the time of launching the process B the client has to be already connected.
 
   3. The third option is the client mode, that will ask the user for the IP address and the IP port, and after connecting with the server will launch an interface where ask the user to introduce a movement with the keyboard arrows, or to press P to get the screen printed in the server side.
 
