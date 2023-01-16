@@ -21,10 +21,12 @@ int main(int argc, char const *argv[])
     // Initialize UI
     init_console_ui();
 
+    // Define shared memory segment
     const char *shm_name = "/STATIC_SHARED_MEM";
     int i, shm_fd;
     int *ptr;
 
+    // Open shared memory
     shm_fd = shm_open(shm_name, O_RDONLY, 0666);
     if (shm_fd == 1)
     {
@@ -39,13 +41,13 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
+    // Open semaphores
     if (open_semaphores() == -1)
-    {
         return -1;
-    }
 
     rgb_pixel_t pixel = {255, 0, 0, 0};
 
+    // Create dynamic private memory
     if ((bmp = bmp_create(W, H, D)) == NULL)
     {
         perror("Error creating bitmap");
@@ -83,16 +85,21 @@ int main(int argc, char const *argv[])
         }
     }
 
+    // Unlink shared memory
     if (shm_unlink(shm_name) == 1)
     {
         perror("Error removing\n");
         return -1;
     }
 
+    // Close and unlink semaphores
     sem_close(sem_id_reader);
     sem_close(sem_id_writer);
     sem_unlink(SEM_PATH_READER);
     sem_unlink(SEM_PATH_WRITER);
+
+    // Destroy dynamic and shared memory
+    munmap(ptr, SIZE);
     bmp_destroy(bmp);
     endwin();
     return 0;

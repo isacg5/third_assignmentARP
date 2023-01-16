@@ -9,6 +9,8 @@ int main(int argc, char *argv[])
         printf("\ncan't catch SIGTSTP\n");
 
     int sockfd;
+
+    // Establish connection
     if ((sockfd = establish_connection(argv)) == -1)
     {
         close(sockfd);

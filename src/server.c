@@ -9,6 +9,8 @@ int main(int argc, char *argv[])
         printf("\ncan't catch SIGTSTP\n");
 
     const int SIZE = W * H * sizeof(int);
+
+    // Define shared memory segment
     const char *shm_name = "/STATIC_SHARED_MEM";
     int i, shm_fd;
     int *ptr;
@@ -16,15 +18,16 @@ int main(int argc, char *argv[])
     bmpfile_t *bmp;
     rgb_pixel_t pixel = {255, 0, 0, 0};
 
+    // Establish connection
     if ((connfd = establish_connection(argv)) == -1)
-    {
         return -1;
-    }
 
+    // Open shared memory
     shm_fd = shm_open(shm_name, O_CREAT | O_RDWR, 0666);
     if (shm_fd == 1)
     {
         perror("Shared memory segment failed\n");
+        close(sockfd);
         return -1;
     }
 
@@ -33,20 +36,26 @@ int main(int argc, char *argv[])
     if (ptr == MAP_FAILED)
     {
         perror("Map failed\n");
+        close(sockfd);
         return -1;
     }
 
+    // Open semaphores
     if (open_semaphores() == -1)
     {
+        close(sockfd);
         return -1;
     }
 
+    // Define semaphores to start with the writer
     sem_init(sem_id_writer, 1, 1);
     sem_init(sem_id_reader, 1, 0);
 
+    // Create dynamic private memory
     if ((bmp = bmp_create(W, H, D)) == NULL)
     {
         perror("Error creating bitmap");
+        close(sockfd);
         return -1;
     }
 
@@ -61,18 +70,23 @@ int main(int argc, char *argv[])
 
     if ((connection(connfd, ptr, bmp, pixel)) == -1)
     {
+        close(sockfd);
         return -1;
     }
 
+    // Close and unlink semaphores
     sem_close(sem_id_reader);
     sem_close(sem_id_writer);
     sem_unlink(SEM_PATH_READER);
     sem_unlink(SEM_PATH_WRITER);
 
+    // Destroy dynamic and shared memory
     munmap(ptr, SIZE);
     bmp_destroy(bmp);
     endwin();
 
     // After chatting close the socket
     close(sockfd);
+
+    return 0;
 }
